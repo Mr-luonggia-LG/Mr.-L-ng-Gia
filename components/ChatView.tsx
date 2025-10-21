@@ -4,6 +4,7 @@ import { ChatMessage, MessageSender } from '../types';
 import { CHAT_SYSTEM_INSTRUCTION } from '../constants';
 import { SendIcon, UserIcon, SparklesIcon, MicrophoneIcon } from './IconComponents';
 import useSpeechRecognition from './useSpeechRecognition';
+import MarkdownRenderer from './MarkdownRenderer';
 import type { Chat } from '@google/genai';
 
 const CHAT_HISTORY_KEY = 'lg-assistant-chat-history';
@@ -18,7 +19,6 @@ const mapMessagesToHistory = (messages: ChatMessage[]): ApiHistoryContent[] => {
         parts: [{ text: msg.text }],
     }));
 };
-
 
 const ChatView: React.FC = () => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -62,12 +62,20 @@ const ChatView: React.FC = () => {
             // FIX: The `sendMessageStream` method for chats expects a `message` property, not `parts`.
             const initialResponseStream = await chatSession.current.sendMessageStream({ message: "Hello!" });
 
-            let initialText = '';
             setMessages([{ sender: MessageSender.AI, text: '' }]);
             for await (const chunk of initialResponseStream) {
                 // FIX: Use chunk.text instead of chunk.text()
-                initialText += chunk.text;
-                setMessages([{ sender: MessageSender.AI, text: initialText }]);
+                setMessages(prev => {
+                    const newMessages = [...prev];
+                    const lastMessage = newMessages[newMessages.length - 1];
+                    if (lastMessage) {
+                        newMessages[newMessages.length - 1] = {
+                            ...lastMessage,
+                            text: lastMessage.text + chunk.text,
+                        };
+                    }
+                    return newMessages;
+                });
             }
 
         } catch (error) {
@@ -122,15 +130,21 @@ const ChatView: React.FC = () => {
         try {
             // FIX: The `sendMessageStream` method for chats expects a `message` property, not `parts`.
             const stream = await chatSession.current.sendMessageStream({ message: currentInput });
-            let aiResponseText = '';
+            
             setMessages(prev => [...prev, { sender: MessageSender.AI, text: '' }]);
 
             for await (const chunk of stream) {
                 // FIX: Use chunk.text instead of chunk.text()
-                aiResponseText += chunk.text;
                 setMessages(prev => {
                     const newMessages = [...prev];
-                    newMessages[newMessages.length - 1] = { sender: MessageSender.AI, text: aiResponseText };
+                    const lastMessage = newMessages[newMessages.length - 1];
+                    // Append chunk to the last message, which should be the AI's response
+                    if (lastMessage && lastMessage.sender === MessageSender.AI) {
+                        newMessages[newMessages.length - 1] = {
+                             ...lastMessage,
+                             text: lastMessage.text + chunk.text,
+                        };
+                    }
                     return newMessages;
                 });
             }
@@ -163,7 +177,7 @@ const ChatView: React.FC = () => {
                     </div>
                 )}
                 <div className={`max-w-xl p-4 rounded-2xl shadow-md ${isUser ? 'bg-blue-600 text-white rounded-br-lg' : 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-bl-lg'}`}>
-                    <p style={{ whiteSpace: 'pre-wrap' }}>{message.text}</p>
+                    <MarkdownRenderer text={message.text} />
                 </div>
                 {isUser && (
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">

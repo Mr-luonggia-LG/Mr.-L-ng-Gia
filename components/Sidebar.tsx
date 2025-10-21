@@ -1,6 +1,7 @@
 import React from 'react';
 import type { View } from '../types';
 import {
+    HomeIcon,
     ChatIcon,
     GrammarIcon,
     VocabularyIcon,
@@ -10,12 +11,16 @@ import {
     TensesIcon,
     LessonPlanIcon,
     ExercisesIcon,
-    SparklesIcon,
+    DailyPracticeIcon,
+    LiveChatIcon,
+    KnowledgeHubIcon,
 } from './IconComponents';
 
 interface SidebarProps {
     currentView: View;
     onViewChange: (view: View) => void;
+    isAdminAuthenticated: boolean;
+    onAdminClick: () => void;
 }
 
 const NavItem: React.FC<{
@@ -39,26 +44,34 @@ const NavItem: React.FC<{
     );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isAdminAuthenticated, onAdminClick }) => {
     const navItems = [
+        { id: 'home', label: 'Home', icon: <HomeIcon /> },
         { id: 'chat', label: 'Conversation', icon: <ChatIcon /> },
+        { id: 'live_chat', label: 'Live Conversation', icon: <LiveChatIcon /> },
+        { id: 'daily_practice', label: 'Daily Practice', icon: <DailyPracticeIcon /> },
         { id: 'grammar', label: 'Grammar Check', icon: <GrammarIcon /> },
         { id: 'vocabulary', label: 'Vocabulary', icon: <VocabularyIcon /> },
         { id: 'pronunciation', label: 'Pronunciation', icon: <PronunciationIcon /> },
         { id: 'translation', label: 'Translation', icon: <TranslateIcon /> },
         { id: 'idioms', label: 'Idioms', icon: <IdiomIcon /> },
         { id: 'tenses', label: 'Tenses', icon: <TensesIcon /> },
+        ...(isAdminAuthenticated ? [{ id: 'lessonplan', label: 'Lesson Plan', icon: <LessonPlanIcon /> }] : []),
         { id: 'exercises', label: 'Exercises', icon: <ExercisesIcon /> },
-        { id: 'lessonplan', label: 'Lesson Plan', icon: <LessonPlanIcon /> },
+        { id: 'knowledge_hub', label: 'Knowledge Hub', icon: <KnowledgeHubIcon /> },
     ];
 
     return (
         <aside className="w-64 flex-shrink-0 p-4 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-            <div className="flex items-center px-2 mb-6">
-                <div className="p-2 bg-blue-600 rounded-lg text-white">
-                    <SparklesIcon />
+            <div
+                className="flex items-center px-2 mb-6 cursor-pointer"
+                onClick={onAdminClick}
+                title="Admin Access"
+            >
+                 <div className="w-10 h-10 bg-blue-600 rounded-lg text-white flex items-center justify-center font-bold text-xl">
+                    LG
                 </div>
-                <h1 className="ml-3 text-xl font-bold">LG Assistant</h1>
+                <h1 className="ml-3 text-xl font-bold">Tiếng Anh Lương Gia</h1>
             </div>
             <nav className="flex-1 space-y-2">
                 {navItems.map((item) => (
@@ -72,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
                 ))}
             </nav>
             <div className="mt-auto text-center text-xs text-gray-400 dark:text-gray-500">
-                <p>&copy; 2024 Mr. Lương Gia</p>
+                <p>Your AI Learning Partner</p>
                 <p>Powered by Gemini</p>
             </div>
         </aside>

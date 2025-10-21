@@ -1,6 +1,7 @@
 import type { Content } from '@google/genai';
 
 export type View =
+    | 'home'
     | 'chat'
     | 'grammar'
     | 'vocabulary'
@@ -9,7 +10,10 @@ export type View =
     | 'idioms'
     | 'tenses'
     | 'lessonplan'
-    | 'exercises';
+    | 'exercises'
+    | 'daily_practice'
+    | 'live_chat'
+    | 'knowledge_hub';
 
 export enum MessageSender {
     User = 'user',
@@ -108,4 +112,33 @@ export interface ExerciseSet {
     topic: string;
     level: string;
     exercises: Exercise[];
+}
+
+// --- Daily Practice Types ---
+export interface DailyPracticeContent {
+    vocabulary: VocabularyItem[];
+    grammar: Exercise;
+    pronunciation: string; // A sentence for practice
+}
+
+export type DayStatus = 'locked' | 'unlocked' | 'completed';
+
+export interface DailyPracticeDay {
+    day: number;
+    status: DayStatus;
+    content?: DailyPracticeContent;
+    answers?: {
+        grammar?: string; // user's answer
+    };
+}
+
+// --- Knowledge Hub Types ---
+export interface GroundingSource {
+    uri: string;
+    title: string;
+}
+
+export interface KnowledgeResult {
+    summary: string;
+    sources: GroundingSource[];
 }

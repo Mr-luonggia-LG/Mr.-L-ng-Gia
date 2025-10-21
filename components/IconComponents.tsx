@@ -3,6 +3,13 @@ import React from 'react';
 // Common props for icons
 interface IconProps extends React.SVGProps<SVGSVGElement> { }
 
+export const HomeIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+);
+
 export const SendIcon: React.FC<IconProps> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
         <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -140,5 +147,30 @@ export const ExercisesIcon: React.FC<IconProps> = (props) => (
         <path d="M10 16s.5-1 2-1 2 1 2 1" />
         <path d="M8 13h1" />
         <path d="M15 13h1" />
+    </svg>
+);
+
+export const DailyPracticeIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M8 2v4" />
+        <path d="M16 2v4" />
+        <rect width="18" height="18" x="3" y="4" rx="2" />
+        <path d="M3 10h18" />
+        <path d="m9 16 2 2 4-4" />
+    </svg>
+);
+
+export const LiveChatIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M17 18.5a9 9 0 1 0-10 0" />
+        <path d="M12 14v8" />
+        <path d="M8.5 16.5a5 5 0 1 0 7 0" />
+    </svg>
+);
+
+export const KnowledgeHubIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v15H6.5A2.5 2.5 0 0 1 4 14.5V4.5A2.5 2.5 0 0 1 6.5 2z"/>
     </svg>
 );

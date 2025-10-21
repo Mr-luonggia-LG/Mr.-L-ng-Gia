@@ -1,8 +1,26 @@
 import React, { useState } from 'react';
 import { generateLessonPlan } from '../services/geminiService';
-import { LessonPlan } from '../types';
+import { LessonPlan, LessonPlanActivity } from '../types';
 import { SparklesIcon } from './IconComponents';
 import LoadingSpinner from './LoadingSpinner';
+
+const ReadOnlyActivityCard: React.FC<{
+    title: string;
+    activityData: LessonPlanActivity;
+    color: string;
+}> = ({ title, activityData, color }) => (
+    <div className={`p-4 border-l-4 ${color} bg-gray-50 dark:bg-gray-800/50 rounded-r-lg`}>
+        <div className="flex justify-between items-center mb-2">
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200">{title}</h4>
+            <div className="flex items-center gap-2">
+                <span className="px-2 py-1 rounded-md bg-white dark:bg-gray-700 text-sm font-medium">{activityData.duration}</span>
+                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">mins</span>
+            </div>
+        </div>
+         <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{activityData.activity}</p>
+    </div>
+);
+
 
 const LessonPlanView: React.FC = () => {
     const [topic, setTopic] = useState('');
@@ -25,25 +43,15 @@ const LessonPlanView: React.FC = () => {
         try {
             const result = await generateLessonPlan(topic, level, parseInt(duration, 10));
             setLessonPlan(result);
-        } catch (err) {
+        } catch (err)
+ {
             setError(err instanceof Error ? err.message : 'An unknown error occurred.');
             console.error(err);
         } finally {
             setIsLoading(false);
         }
     };
-
-    const ActivityCard: React.FC<{ title: string; duration: number; activity: string; color: string }> = ({ title, duration, activity, color }) => (
-        <div className={`p-4 border-l-4 ${color} bg-gray-50 dark:bg-gray-800/50 rounded-r-lg`}>
-            <div className="flex justify-between items-center">
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200">{title}</h4>
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{duration} mins</span>
-            </div>
-            <p className="mt-2 text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{activity}</p>
-        </div>
-    );
-
-
+    
     return (
         <div className="flex flex-col flex-1 h-full bg-gray-100 dark:bg-gray-900">
             <header className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
@@ -115,30 +123,35 @@ const LessonPlanView: React.FC = () => {
                     {/* Lesson Plan Display */}
                     {lessonPlan && (
                         <div className="mt-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-                            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Lesson Plan: <span className="text-blue-600 dark:text-blue-400">{lessonPlan.topic}</span></h2>
-                            <div className="mt-2 flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-md">{lessonPlan.level}</span>
-                                <span className="px-2 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-md">{lessonPlan.totalDuration} minutes</span>
+                            <div className="border-b border-gray-200 dark:border-gray-700 pb-4 mb-6">
+                                <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 capitalize">{lessonPlan.topic}</h2>
+                                <div className="mt-2 flex items-center gap-6 text-md text-gray-500 dark:text-gray-400">
+                                    <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 rounded-full font-medium">{lessonPlan.level}</span>
+                                    <span className="font-medium">{lessonPlan.totalDuration} minutes</span>
+                                </div>
                             </div>
                             
-                            <div className="mt-6 space-y-4">
+                            <div className="space-y-6">
+                                {/* Objectives */}
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Objectives</h3>
-                                    <ul className="list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-300">
+                                    <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Objectives</h3>
+                                    <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 pl-2">
                                         {lessonPlan.objectives.map((obj, i) => <li key={i}>{obj}</li>)}
                                     </ul>
                                 </div>
 
+                                {/* Activities */}
                                 <div className="space-y-4">
-                                     <ActivityCard title="Warm-up" duration={lessonPlan.warmUp.duration} activity={lessonPlan.warmUp.activity} color="border-yellow-400 dark:border-yellow-600" />
-                                     <ActivityCard title="Presentation" duration={lessonPlan.presentation.duration} activity={lessonPlan.presentation.activity} color="border-blue-400 dark:border-blue-600" />
-                                     <ActivityCard title="Practice" duration={lessonPlan.practice.duration} activity={lessonPlan.practice.activity} color="border-green-400 dark:border-green-600" />
-                                     <ActivityCard title="Production" duration={lessonPlan.production.duration} activity={lessonPlan.production.activity} color="border-purple-400 dark:border-purple-600" />
+                                     <ReadOnlyActivityCard title="Warm-up" activityData={lessonPlan.warmUp} color="border-yellow-400 dark:border-yellow-600" />
+                                     <ReadOnlyActivityCard title="Presentation" activityData={lessonPlan.presentation} color="border-blue-400 dark:border-blue-600" />
+                                     <ReadOnlyActivityCard title="Practice" activityData={lessonPlan.practice} color="border-green-400 dark:border-green-600" />
+                                     <ReadOnlyActivityCard title="Production" activityData={lessonPlan.production} color="border-purple-400 dark:border-purple-600" />
                                 </div>
                                 
+                                {/* Homework */}
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Homework</h3>
-                                    <p className="p-4 bg-gray-100 dark:bg-gray-700/50 rounded-lg text-gray-600 dark:text-gray-300">{lessonPlan.homework}</p>
+                                    <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Homework</h3>
+                                    <p className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{lessonPlan.homework}</p>
                                 </div>
                             </div>
                         </div>

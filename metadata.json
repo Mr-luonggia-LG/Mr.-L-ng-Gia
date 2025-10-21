@@ -1,6 +1,6 @@
 {
-  "name": "Mr. Lương Gia (LG) English Teaching Assistant",
-  "description": "An AI-powered English teaching assistant for students of Mr. Lương Gia (LG), offering conversation practice, grammar correction, and vocabulary building.",
+  "name": "Tiếng Anh Lương Gia (Mr.LG)",
+  "description": "Trang web cá nhân của thầy Lương Gia, cung cấp các công cụ học tiếng Anh tiên tiến được hỗ trợ bởi AI để giúp học sinh luyện tập và tiến bộ.",
   "requestFramePermissions": [
     "microphone"
   ]
