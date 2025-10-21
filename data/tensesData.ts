@@ -1,0 +1,163 @@
+import { TenseItem } from '../types';
+
+export const TENSES_DATA: TenseItem[] = [
+    // Present Tenses
+    {
+        category: "Present Tenses",
+        name_en: "Present Simple",
+        name_vi: "Thì Hiện tại đơn",
+        structure_active: "S + V(s/es) + O",
+        structure_passive: "S + am/is/are + PII + (by O)",
+        usage_en: ["Facts or generalizations", "Habits or routines", "Scheduled events in the near future", "Stative verbs"],
+        usage_vi: ["Sự thật, chân lý hiển nhiên", "Thói quen, hành động lặp đi lặp lại", "Lịch trình, thời gian biểu (tàu, xe...)", "Động từ tình thái"],
+        example_active_en: "She writes a letter every week.",
+        example_active_vi: "Cô ấy viết một lá thư mỗi tuần.",
+        example_passive_en: "A letter is written by her every week.",
+        example_passive_vi: "Một lá thư được viết bởi cô ấy mỗi tuần."
+    },
+    {
+        category: "Present Tenses",
+        name_en: "Present Continuous",
+        name_vi: "Thì Hiện tại tiếp diễn",
+        structure_active: "S + am/is/are + V-ing + O",
+        structure_passive: "S + am/is/are + being + PII + (by O)",
+        usage_en: ["Actions happening right now", "Temporary situations", "Future plans or arrangements", "Annoying habits (with 'always')"],
+        usage_vi: ["Hành động đang xảy ra tại thời điểm nói", "Tình huống tạm thời", "Kế hoạch, dự định trong tương lai gần", "Phàn nàn về thói quen xấu (với 'always')"],
+        example_active_en: "He is watching television.",
+        example_active_vi: "Anh ấy đang xem TV.",
+        example_passive_en: "Television is being watched by him.",
+        example_passive_vi: "TV đang được xem bởi anh ấy."
+    },
+    {
+        category: "Present Tenses",
+        name_en: "Present Perfect",
+        name_vi: "Thì Hiện tại hoàn thành",
+        structure_active: "S + have/has + PII + O",
+        structure_passive: "S + have/has + been + PII + (by O)",
+        usage_en: ["Actions that started in the past and continue to the present", "Experiences in life", "Past actions with a result in the present"],
+        usage_vi: ["Hành động bắt đầu trong quá khứ, kéo dài đến hiện tại", "Trải nghiệm, kinh nghiệm sống", "Hành động quá khứ có kết quả ở hiện tại"],
+        example_active_en: "They have built a new bridge.",
+        example_active_vi: "Họ đã xây một cây cầu mới.",
+        example_passive_en: "A new bridge has been built by them.",
+        example_passive_vi: "Một cây cầu mới đã được xây bởi họ."
+    },
+    {
+        category: "Present Tenses",
+        name_en: "Present Perfect Continuous",
+        name_vi: "Thì Hiện tại hoàn thành tiếp diễn",
+        structure_active: "S + have/has + been + V-ing + O",
+        structure_passive: "Not commonly used in passive voice.",
+        usage_en: ["Emphasizes the duration of an action that started in the past and is still ongoing", "Actions that have recently stopped and have a result in the present"],
+        usage_vi: ["Nhấn mạnh thời gian của hành động bắt đầu trong quá khứ và vẫn đang tiếp diễn", "Hành động vừa mới kết thúc và có kết quả ở hiện tại"],
+        example_active_en: "She has been working here for five years.",
+        example_active_vi: "Cô ấy đã làm việc ở đây được năm năm rồi.",
+        example_passive_en: "N/A",
+        example_passive_vi: "Không phổ biến"
+    },
+    // Past Tenses
+    {
+        category: "Past Tenses",
+        name_en: "Past Simple",
+        name_vi: "Thì Quá khứ đơn",
+        structure_active: "S + V-ed/V2 + O",
+        structure_passive: "S + was/were + PII + (by O)",
+        usage_en: ["Completed actions in the past", "A series of completed actions", "Past habits"],
+        usage_vi: ["Hành động đã hoàn tất trong quá khứ", "Một chuỗi các hành động đã hoàn tất", "Thói quen trong quá khứ"],
+        example_active_en: "I saw a movie yesterday.",
+        example_active_vi: "Hôm qua tôi đã xem một bộ phim.",
+        example_passive_en: "A movie was seen by me yesterday.",
+        example_passive_vi: "Một bộ phim đã được xem bởi tôi hôm qua."
+    },
+    {
+        category: "Past Tenses",
+        name_en: "Past Continuous",
+        name_vi: "Thì Quá khứ tiếp diễn",
+        structure_active: "S + was/were + V-ing + O",
+        structure_passive: "S + was/were + being + PII + (by O)",
+        usage_en: ["An action in progress at a specific time in the past", "Two actions happening at the same time in the past", "An interrupted action in the past"],
+        usage_vi: ["Hành động đang diễn ra tại một thời điểm cụ thể trong quá khứ", "Hai hành động xảy ra song song trong quá khứ", "Một hành động đang diễn ra thì bị hành động khác xen vào"],
+        example_active_en: "She was cooking when I called.",
+        example_active_vi: "Cô ấy đang nấu ăn khi tôi gọi.",
+        example_passive_en: "Dinner was being cooked by her when I called.",
+        example_passive_vi: "Bữa tối đang được nấu bởi cô ấy khi tôi gọi."
+    },
+    {
+        category: "Past Tenses",
+        name_en: "Past Perfect",
+        name_vi: "Thì Quá khứ hoàn thành",
+        structure_active: "S + had + PII + O",
+        structure_passive: "S + had + been + PII + (by O)",
+        usage_en: ["An action that happened before another action in the past"],
+        usage_vi: ["Một hành động xảy ra trước một hành động khác trong quá khứ"],
+        example_active_en: "The train had left when we arrived at the station.",
+        example_active_vi: "Tàu đã rời đi khi chúng tôi đến ga.",
+        example_passive_en: "The station had been left by the train when we arrived.",
+        example_passive_vi: "Nhà ga đã bị con tàu bỏ lại khi chúng tôi đến."
+    },
+    {
+        category: "Past Tenses",
+        name_en: "Past Perfect Continuous",
+        name_vi: "Thì Quá khứ hoàn thành tiếp diễn",
+        structure_active: "S + had + been + V-ing + O",
+        structure_passive: "Not commonly used in passive voice.",
+        usage_en: ["Emphasizes the duration of an action that was in progress before another action in the past"],
+        usage_vi: ["Nhấn mạnh thời gian của một hành động đã đang diễn ra trước một hành động khác trong quá khứ"],
+        example_active_en: "He had been waiting for an hour before the bus came.",
+        example_active_vi: "Anh ấy đã đợi một tiếng trước khi xe buýt đến.",
+        example_passive_en: "N/A",
+        example_passive_vi: "Không phổ biến"
+    },
+    // Future Tenses
+    {
+        category: "Future Tenses",
+        name_en: "Future Simple",
+        name_vi: "Thì Tương lai đơn",
+        structure_active: "S + will/shall + V(inf) + O",
+        structure_passive: "S + will/shall + be + PII + (by O)",
+        usage_en: ["Predictions about the future", "Spontaneous decisions", "Promises or offers"],
+        usage_vi: ["Dự đoán về tương lai", "Quyết định tức thời", "Lời hứa, lời đề nghị"],
+        example_active_en: "I will help you with your homework.",
+        example_active_vi: "Tôi sẽ giúp bạn làm bài tập về nhà.",
+        example_passive_en: "You will be helped with your homework by me.",
+        example_passive_vi: "Bạn sẽ được tôi giúp làm bài tập về nhà."
+    },
+    {
+        category: "Future Tenses",
+        name_en: "Future Continuous",
+        name_vi: "Thì Tương lai tiếp diễn",
+        structure_active: "S + will/shall + be + V-ing + O",
+        structure_passive: "Not commonly used in passive voice.",
+        usage_en: ["An action that will be in progress at a specific time in the future", "An interrupted action in the future"],
+        usage_vi: ["Một hành động sẽ đang diễn ra tại một thời điểm cụ thể trong tương lai", "Một hành động sẽ đang diễn ra thì bị hành động khác xen vào trong tương lai"],
+        example_active_en: "This time tomorrow, I will be flying to Paris.",
+        example_active_vi: "Giờ này ngày mai, tôi sẽ đang bay đến Paris.",
+        example_passive_en: "N/A",
+        example_passive_vi: "Không phổ biến"
+    },
+    {
+        category: "Future Tenses",
+        name_en: "Future Perfect",
+        name_vi: "Thì Tương lai hoàn thành",
+        structure_active: "S + will/shall + have + PII + O",
+        structure_passive: "S + will/shall + have + been + PII + (by O)",
+        usage_en: ["An action that will be completed before a specific time or another action in the future"],
+        usage_vi: ["Một hành động sẽ hoàn thành trước một thời điểm hoặc một hành động khác trong tương lai"],
+        example_active_en: "By 2030, she will have graduated from university.",
+        example_active_vi: "Đến năm 2030, cô ấy sẽ đã tốt nghiệp đại học.",
+        example_passive_en: "By 2030, the university will have been graduated from by her.",
+        example_passive_vi: "Đến năm 2030, trường đại học sẽ đã được cô ấy tốt nghiệp."
+    },
+    {
+        category: "Future Tenses",
+        name_en: "Future Perfect Continuous",
+        name_vi: "Thì Tương lai hoàn thành tiếp diễn",
+        structure_active: "S + will/shall + have + been + V-ing + O",
+        structure_passive: "Not commonly used in passive voice.",
+        usage_en: ["Emphasizes the duration of an action up to a certain point in the future"],
+        usage_vi: ["Nhấn mạnh thời gian của một hành động cho đến một thời điểm nhất định trong tương lai"],
+        example_active_en: "By next year, we will have been living here for ten years.",
+        example_active_vi: "Đến năm sau, chúng tôi sẽ đã sống ở đây được mười năm.",
+        example_passive_en: "N/A",
+        example_passive_vi: "Không phổ biến"
+    },
+];

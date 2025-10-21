@@ -1,107 +1,74 @@
-import { GoogleGenAI, Chat, Type, GenerateContentResponse, Modality } from "@google/genai";
-import { GrammarCorrection, VocabularyItem } from '../types';
+// FIX: Removed 'History' from import as it is not an exported member of '@google/genai'.
+import { GoogleGenAI, Type, Modality, Content } from '@google/genai';
+import {
+    GrammarCorrection,
+    VocabularyItem,
+    IdiomItem,
+    MindMapData,
+    LessonPlan,
+    ExerciseSet,
+} from '../types';
 
-const API_KEY = process.env.API_KEY;
+// This allows other files to import this type from the service.
+export type { Content as ApiHistoryContent };
 
-if (!API_KEY) {
-    throw new Error("API_KEY environment variable not set.");
-}
+// Initialize the client once and reuse it.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+const textModel = 'gemini-2.5-flash';
+const proModel = 'gemini-2.5-pro';
+const ttsModel = 'gemini-2.5-flash-preview-tts';
 
-// The history type expected by the Gemini API for initializing a chat
-// FIX: Export ApiHistoryContent to be used for type annotations in other files.
-export interface ApiHistoryContent {
-    role: 'user' | 'model';
-    parts: { text: string }[];
-}
+// --- CHAT ---
 
-export const startChatSession = (systemInstruction: string, history?: ApiHistoryContent[]): Chat => {
+// FIX: Changed the type of the 'history' parameter from the non-existent 'History' to 'Content[]'.
+export const startChatSession = (systemInstruction: string, history?: Content[]) => {
     return ai.chats.create({
-        model: 'gemini-2.5-flash',
-        history: history,
+        model: proModel,
         config: {
             systemInstruction: systemInstruction,
-            temperature: 0.7,
-            topP: 0.9,
-            topK: 40,
         },
+        history: history,
     });
 };
 
+// --- GRAMMAR ---
+
 export const correctGrammar = async (text: string): Promise<GrammarCorrection> => {
-    const prompt = `You are an expert English grammar checker. Your task is to correct the provided text and explain the errors in a clear and simple manner.
-    Please respond ONLY with a valid JSON object.
-    The JSON object should have two keys: "correction" (the corrected sentence) and "explanation" (a brief explanation of the mistakes).
-    Do not add any text before or after the JSON object.
+    const prompt = `Correct the following English text. Provide the corrected version and a simple, brief explanation of the mistakes in both English and Vietnamese. The user's text is: "${text}"`;
 
-    Text to correct: "${text}"`;
-
-    const response: GenerateContentResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+    const response = await ai.models.generateContent({
+        model: textModel,
         contents: prompt,
         config: {
-            responseMimeType: "application/json",
+            responseMimeType: 'application/json',
             responseSchema: {
                 type: Type.OBJECT,
                 properties: {
                     correction: { type: Type.STRING },
-                    explanation: { type: Type.STRING }
+                    explanation_en: { type: Type.STRING, description: "Explanation in English" },
+                    explanation_vi: { type: Type.STRING, description: "Explanation in Vietnamese" },
                 },
-                required: ["correction", "explanation"]
-            }
-        }
+                required: ['correction', 'explanation_en', 'explanation_vi'],
+            },
+        },
     });
 
-    const jsonString = response.text;
+    const jsonString = response.text.trim();
     try {
-        return JSON.parse(jsonString);
+        return JSON.parse(jsonString) as GrammarCorrection;
     } catch (e) {
-        console.error("Failed to parse JSON from Gemini for grammar correction:", jsonString);
-        throw new Error("Received an invalid format from the AI.");
+        console.error("Failed to parse JSON for grammar correction:", jsonString);
+        throw new Error("The model returned an invalid format. Please try again.");
     }
 };
 
-export const generateVocabulary = async (topic: string): Promise<VocabularyItem[]> => {
-    const prompt = `You are an expert English vocabulary teacher. Generate a list of 8 useful vocabulary words related to the topic: "${topic}".
-    For each word, provide its part of speech (e.g., noun, verb, adjective), a clear definition in English, and an example sentence.
-    Please respond ONLY with a valid JSON object.
-    The JSON object should be an array of objects, where each object has four keys: "word", "pos", "definition", and "example".
-    Do not add any text before or after the JSON object.`;
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-                type: Type.ARRAY,
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        word: { type: Type.STRING },
-                        pos: { type: Type.STRING },
-                        definition: { type: Type.STRING },
-                        example: { type: Type.STRING }
-                    },
-                    required: ["word", "pos", "definition", "example"]
-                }
-            }
-        }
-    });
-    
-    const jsonString = response.text;
-    try {
-        return JSON.parse(jsonString);
-    } catch (e) {
-        console.error("Failed to parse JSON from Gemini for vocabulary generation:", jsonString);
-        throw new Error("Received an invalid format from the AI.");
-    }
-};
+// --- PRONUNCIATION / TTS ---
 
 export const generatePronunciationAudio = async (text: string): Promise<string> => {
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash-preview-tts",
+        model: ttsModel,
         contents: [{ parts: [{ text: text }] }],
         config: {
             responseModalities: [Modality.AUDIO],
@@ -114,10 +81,254 @@ export const generatePronunciationAudio = async (text: string): Promise<string> 
     });
 
     const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    if (base64Audio) {
-        return base64Audio;
-    } else {
-        console.error("Audio generation failed. Full response:", JSON.stringify(response, null, 2));
-        throw new Error("Failed to generate audio. No audio data received.");
+    if (!base64Audio) {
+        throw new Error("No audio data received from the API.");
+    }
+    return base64Audio;
+};
+
+
+// --- VOCABULARY ---
+
+export const generateVocabulary = async (topic: string): Promise<VocabularyItem[]> => {
+    const prompt = `Generate a list of 5-7 useful English vocabulary words related to the topic "${topic}". For each word, provide its part of speech (e.g., noun, verb, adjective), a clear definition, and an example sentence.`;
+
+    const response = await ai.models.generateContent({
+        model: textModel,
+        contents: prompt,
+        config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        word: { type: Type.STRING },
+                        pos: { type: Type.STRING, description: "Part of speech (e.g., noun, verb, adjective)" },
+                        definition: { type: Type.STRING },
+                        example: { type: Type.STRING },
+                    },
+                    required: ['word', 'pos', 'definition', 'example'],
+                },
+            },
+        },
+    });
+    
+    const jsonString = response.text.trim();
+    try {
+        return JSON.parse(jsonString) as VocabularyItem[];
+    } catch (e) {
+        console.error("Failed to parse JSON for vocabulary:", jsonString);
+        throw new Error("The model returned an invalid format. Please try again.");
+    }
+};
+
+// --- TRANSLATION ---
+
+export const translateText = async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
+    const prompt = `Translate the following text from ${sourceLang} to ${targetLang}. Provide only the translated text, with no extra explanations or phrases.\n\nText: "${text}"`;
+    
+    const response = await ai.models.generateContent({
+        model: textModel,
+        contents: prompt,
+    });
+    
+    return response.text.trim();
+};
+
+// --- IDIOMS ---
+
+export const generateIdioms = async (topic: string): Promise<IdiomItem[]> => {
+    const prompt = `Generate a list of 3-5 common English idioms related to the topic "${topic}". For each idiom, provide its meaning, an example sentence, and its closest Vietnamese equivalent.`;
+    
+    const response = await ai.models.generateContent({
+        model: textModel,
+        contents: prompt,
+        config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        idiom: { type: Type.STRING },
+                        meaning: { type: Type.STRING },
+                        example: { type: Type.STRING },
+                        vietnamese_equivalent: { type: Type.STRING },
+                    },
+                    required: ['idiom', 'meaning', 'example', 'vietnamese_equivalent'],
+                }
+            }
+        }
+    });
+
+    const jsonString = response.text.trim();
+    try {
+        return JSON.parse(jsonString) as IdiomItem[];
+    } catch (e) {
+        console.error("Failed to parse JSON for idioms:", jsonString);
+        throw new Error("The model returned an invalid format. Please try again.");
+    }
+};
+
+
+// --- LESSON PLAN ---
+
+export const generateLessonPlan = async (topic: string, level: string, duration: number): Promise<LessonPlan> => {
+    const prompt = `Create a detailed English lesson plan for a ${duration}-minute class on the topic "${topic}" for ${level} level students. The plan should include clear objectives, a warm-up activity, presentation of new material, a practice activity, and a production activity where students use the new language. Also suggest a homework assignment. Structure each activity with a suggested duration in minutes and a description. The total duration of all activities should equal the lesson duration.`;
+
+    const response = await ai.models.generateContent({
+        model: proModel,
+        contents: prompt,
+        config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    topic: { type: Type.STRING },
+                    level: { type: Type.STRING },
+                    totalDuration: { type: Type.INTEGER },
+                    objectives: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    warmUp: {
+                        type: Type.OBJECT,
+                        properties: { duration: { type: Type.INTEGER }, activity: { type: Type.STRING } },
+                        required: ['duration', 'activity'],
+                    },
+                    presentation: {
+                        type: Type.OBJECT,
+                        properties: { duration: { type: Type.INTEGER }, activity: { type: Type.STRING } },
+                        required: ['duration', 'activity'],
+                    },
+                    practice: {
+                        type: Type.OBJECT,
+                        properties: { duration: { type: Type.INTEGER }, activity: { type: Type.STRING } },
+                        required: ['duration', 'activity'],
+                    },
+                    production: {
+                        type: Type.OBJECT,
+                        properties: { duration: { type: Type.INTEGER }, activity: { type: Type.STRING } },
+                        required: ['duration', 'activity'],
+                    },
+                    homework: { type: Type.STRING },
+                },
+                 required: ['topic', 'level', 'totalDuration', 'objectives', 'warmUp', 'presentation', 'practice', 'production', 'homework']
+            },
+        },
+    });
+
+    const jsonString = response.text.trim();
+    try {
+        return JSON.parse(jsonString) as LessonPlan;
+    } catch (e) {
+        console.error("Failed to parse JSON for lesson plan:", jsonString);
+        throw new Error("The model returned an invalid format. Please try again.");
+    }
+};
+
+// --- EXERCISES ---
+
+export const generateExercises = async (topic: string, level: string, count: number): Promise<ExerciseSet> => {
+    const prompt = `Generate a set of ${count} English exercises for an ${level} level student on the topic "${topic}". Include a mix of multiple-choice and fill-in-the-blank questions. For each exercise, provide the type, the question, options (for multiple-choice), the correct answer, and a brief explanation for the answer.`;
+
+    const response = await ai.models.generateContent({
+        model: proModel,
+        contents: prompt,
+        config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    topic: { type: Type.STRING },
+                    level: { type: Type.STRING },
+                    exercises: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                type: { type: Type.STRING, description: "Can be 'multiple_choice' or 'fill_in_the_blank'" },
+                                question: { type: Type.STRING },
+                                options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                answer: { type: Type.STRING },
+                                explanation: { type: Type.STRING },
+                            },
+                            required: ['type', 'question', 'answer', 'explanation'],
+                        }
+                    }
+                },
+                required: ['topic', 'level', 'exercises'],
+            }
+        }
+    });
+
+    const jsonString = response.text.trim();
+    try {
+        return JSON.parse(jsonString) as ExerciseSet;
+    } catch (e) {
+        console.error("Failed to parse JSON for exercises:", jsonString);
+        throw new Error("The model returned an invalid format. Please try again.");
+    }
+};
+
+
+// --- MIND MAP ---
+export const generateMindMapData = async (topic: string): Promise<MindMapData> => {
+    const prompt = `Generate the data for a mind map about "${topic}". The mind map should have a central topic and several main branches, each with a few sub-branches.
+    - The central node should have id "1".
+    - Create 4-5 main branch nodes with ids "2", "3", "4", etc.
+    - Create 2-3 sub-branch nodes for each main branch.
+    - Provide the data as a JSON object with two keys: "nodes" and "edges".
+    - "nodes" should be an array of objects, each with an "id" (string), "type" (the central node should be "input", others "default"), and "data" (an object with a "label" string).
+    - "edges" should be an array of objects, each with an "id" (e.g., "e1-2"), a "source" (parent node id), and a "target" (child node id).`;
+    
+    const response = await ai.models.generateContent({
+        model: proModel,
+        contents: prompt,
+        config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    nodes: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                id: { type: Type.STRING },
+                                type: { type: Type.STRING },
+                                data: {
+                                    type: Type.OBJECT,
+                                    properties: {
+                                        label: { type: Type.STRING },
+                                    },
+                                    required: ['label'],
+                                },
+                            },
+                            required: ['id', 'type', 'data'],
+                        },
+                    },
+                    edges: {
+                        type: Type.ARRAY,
+                        items: {
+                            type: Type.OBJECT,
+                            properties: {
+                                id: { type: Type.STRING },
+                                source: { type: Type.STRING },
+                                target: { type: Type.STRING },
+                            },
+                             required: ['id', 'source', 'target'],
+                        }
+                    },
+                },
+                required: ['nodes', 'edges'],
+            },
+        },
+    });
+
+    const jsonString = response.text.trim();
+    try {
+        return JSON.parse(jsonString) as MindMapData;
+    } catch (e) {
+        console.error("Failed to parse JSON for mind map:", jsonString);
+        throw new Error("The model returned an invalid format. Please try again.");
     }
 };

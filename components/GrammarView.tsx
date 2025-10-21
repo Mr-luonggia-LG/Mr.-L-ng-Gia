@@ -176,7 +176,9 @@ const GrammarView: React.FC = () => {
             feedback: 'negative',
             reason: feedbackReason,
             originalText: inputText,
-            correction: result?.correction
+            correction: result?.correction,
+            explanation_en: result?.explanation_en,
+            explanation_vi: result?.explanation_vi,
         });
         setFeedbackState('submitted');
     };
@@ -184,13 +186,13 @@ const GrammarView: React.FC = () => {
     return (
         <div className="flex flex-col flex-1 h-full bg-gray-100 dark:bg-gray-900">
             <header className="p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <h1 className="text-xl font-semibold">Grammar Check</h1>
+                <h1 className="text-xl font-semibold">Grammar Check / Kiểm tra Ngữ pháp</h1>
             </header>
             <div className="flex-1 overflow-y-auto p-6 md:p-8">
                 <div className="max-w-3xl mx-auto">
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
                         <form onSubmit={handleSubmit}>
-                            <h2 className="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300">Enter text to check for grammar errors</h2>
+                            <h2 className="text-lg font-medium mb-4 text-gray-700 dark:text-gray-300">Enter text to check / Nhập văn bản để kiểm tra</h2>
                             <textarea
                                 value={inputText}
                                 onChange={(e) => setInputText(e.target.value)}
@@ -217,7 +219,7 @@ const GrammarView: React.FC = () => {
                     {result && (
                         <div className="mt-8 space-y-4">
                             <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-                                <h3 className="text-lg font-semibold text-gray-500 dark:text-gray-400">Original Text</h3>
+                                <h3 className="text-lg font-semibold text-gray-500 dark:text-gray-400">Original Text / Văn bản gốc</h3>
                                 <p className="mt-2 text-gray-700 dark:text-gray-300 italic line-through">
                                     {inputText}
                                 </p>
@@ -226,7 +228,7 @@ const GrammarView: React.FC = () => {
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <span className="flex-shrink-0 w-6 h-6 text-green-600 dark:text-green-400"><ThumbsUpIcon/></span>
-                                        <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">Correction</h3>
+                                        <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">Correction / Chỉnh sửa</h3>
                                     </div>
                                     <button
                                         onClick={handleAudioButtonClick}
@@ -244,10 +246,13 @@ const GrammarView: React.FC = () => {
                              <div className="bg-blue-50 dark:bg-blue-900/50 p-6 rounded-xl shadow-lg border border-blue-200 dark:border-blue-700">
                                 <div className="flex items-center gap-2">
                                      <span className="flex-shrink-0 w-6 h-6 text-blue-600 dark:text-blue-400"><GrammarIcon/></span>
-                                    <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">Explanation</h3>
+                                    <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">Explanation / Giải thích</h3>
                                 </div>
-                                <p className="mt-2 text-gray-700 dark:text-gray-300">
-                                    {result.explanation}
+                                <p className="mt-3 text-gray-700 dark:text-gray-300">
+                                    {result.explanation_en}
+                                </p>
+                                <p className="mt-2 text-gray-500 dark:text-gray-400 italic">
+                                    {result.explanation_vi}
                                 </p>
                             </div>
                             <div className="mt-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">

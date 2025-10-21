@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { startChatSession } from '../services/geminiService';
-import type { ApiHistoryContent } from '../services/geminiService';
+import { startChatSession, ApiHistoryContent } from '../services/geminiService';
 import { ChatMessage, MessageSender } from '../types';
 import { CHAT_SYSTEM_INSTRUCTION } from '../constants';
 import { SendIcon, UserIcon, SparklesIcon, MicrophoneIcon } from './IconComponents';
@@ -10,7 +9,6 @@ import type { Chat } from '@google/genai';
 const CHAT_HISTORY_KEY = 'lg-assistant-chat-history';
 
 // Converts the app's message format to the format required by the Gemini API history.
-// FIX: Explicitly type the return value to prevent TypeScript from widening the `role` property to `string`.
 const mapMessagesToHistory = (messages: ChatMessage[]): ApiHistoryContent[] => {
     // Filter out the last message if it's an empty placeholder from the AI for streaming
     const filteredMessages = messages.filter(msg => msg.text.trim() !== '' || msg.sender === MessageSender.User);
@@ -59,15 +57,15 @@ const ChatView: React.FC = () => {
 
     const initializeNewChat = useCallback(async () => {
         setIsLoading(true);
-        // Clear messages for a new session
-        setMessages([]); 
         try {
             chatSession.current = startChatSession(CHAT_SYSTEM_INSTRUCTION);
+            // FIX: The `sendMessageStream` method for chats expects a `message` property, not `parts`.
             const initialResponseStream = await chatSession.current.sendMessageStream({ message: "Hello!" });
 
             let initialText = '';
             setMessages([{ sender: MessageSender.AI, text: '' }]);
             for await (const chunk of initialResponseStream) {
+                // FIX: Use chunk.text instead of chunk.text()
                 initialText += chunk.text;
                 setMessages([{ sender: MessageSender.AI, text: initialText }]);
             }
@@ -82,7 +80,7 @@ const ChatView: React.FC = () => {
 
     // Effect to load history or start a new chat on component mount
     useEffect(() => {
-        const loadAndInitialize = () => {
+        const loadAndInitialize = async () => {
             try {
                 const storedMessages = localStorage.getItem(CHAT_HISTORY_KEY);
                 if (storedMessages) {
@@ -100,7 +98,7 @@ const ChatView: React.FC = () => {
             }
             
             // If no valid history was found, start a brand new chat
-            initializeNewChat();
+            await initializeNewChat();
         };
         
         loadAndInitialize();
@@ -116,16 +114,19 @@ const ChatView: React.FC = () => {
         if (!input.trim() || isLoading || !chatSession.current) return;
 
         const userMessage: ChatMessage = { sender: MessageSender.User, text: input };
+        const currentInput = input;
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
 
         try {
-            const stream = await chatSession.current.sendMessageStream({ message: input });
+            // FIX: The `sendMessageStream` method for chats expects a `message` property, not `parts`.
+            const stream = await chatSession.current.sendMessageStream({ message: currentInput });
             let aiResponseText = '';
             setMessages(prev => [...prev, { sender: MessageSender.AI, text: '' }]);
 
             for await (const chunk of stream) {
+                // FIX: Use chunk.text instead of chunk.text()
                 aiResponseText += chunk.text;
                 setMessages(prev => {
                     const newMessages = [...prev];
@@ -136,7 +137,17 @@ const ChatView: React.FC = () => {
         } catch (error) {
             console.error('Error sending message:', error);
             const errorMessage: ChatMessage = { sender: MessageSender.AI, text: "I'm sorry, I encountered an error. Please try again." };
-            setMessages(prev => [...prev, errorMessage]);
+            // FIX: Ensure error message is added correctly to the message list.
+            setMessages(prev => {
+                const newMessages = [...prev];
+                // if the last message is an empty AI message, replace it
+                if(newMessages[newMessages.length-1].sender === MessageSender.AI && newMessages[newMessages.length-1].text === ''){
+                     newMessages[newMessages.length-1] = errorMessage;
+                } else { // otherwise add it
+                     newMessages.push(errorMessage);
+                }
+                return newMessages;
+            });
         } finally {
             setIsLoading(false);
         }

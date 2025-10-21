@@ -1,55 +1,82 @@
-
 import React from 'react';
-import { View } from '../types';
-import { ChatIcon, GrammarIcon, VocabularyIcon, PronunciationIcon } from './IconComponents';
+import type { View } from '../types';
+import {
+    ChatIcon,
+    GrammarIcon,
+    VocabularyIcon,
+    PronunciationIcon,
+    TranslateIcon,
+    IdiomIcon,
+    TensesIcon,
+    LessonPlanIcon,
+    ExercisesIcon,
+    SparklesIcon,
+} from './IconComponents';
 
 interface SidebarProps {
-  currentView: View;
-  setCurrentView: (view: View) => void;
+    currentView: View;
+    onViewChange: (view: View) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
-  const navItems = [
-    { view: View.Chat, label: 'Conversation', icon: <ChatIcon /> },
-    { view: View.Grammar, label: 'Grammar Check', icon: <GrammarIcon /> },
-    { view: View.Vocabulary, label: 'Vocabulary Builder', icon: <VocabularyIcon /> },
-    { view: View.Pronunciation, label: 'Pronunciation', icon: <PronunciationIcon /> },
-  ];
+const NavItem: React.FC<{
+    label: string;
+    icon: React.ReactNode;
+    isActive: boolean;
+    onClick: () => void;
+}> = ({ label, icon, isActive, onClick }) => {
+    return (
+        <button
+            onClick={onClick}
+            className={`flex items-center w-full px-4 py-3 text-left transition-colors duration-200 rounded-lg ${
+                isActive
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+        >
+            <div className="flex-shrink-0 w-6 h-6">{icon}</div>
+            <span className="ml-4 font-medium">{label}</span>
+        </button>
+    );
+};
 
-  return (
-    <aside className="w-64 bg-white dark:bg-gray-800 flex flex-col border-r border-gray-200 dark:border-gray-700">
-      <div className="flex items-center justify-center h-20 border-b border-gray-200 dark:border-gray-700">
-        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            <span className="bg-blue-600 dark:bg-blue-400 text-white rounded-md px-2 py-1">LG</span> Assistant
-        </div>
-      </div>
-      <nav className="flex-1 px-4 py-6">
-        <ul>
-          {navItems.map((item) => (
-            <li key={item.view}>
-              <button
-                onClick={() => setCurrentView(item.view)}
-                className={`flex items-center w-full px-4 py-3 my-1 text-left rounded-lg transition-colors duration-200 
-                  ${
-                    currentView === item.view
-                      ? 'bg-blue-600 text-white shadow-md'
-                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                  }`}
-              >
-                <span className="w-6 h-6 mr-3">{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-xs text-center text-gray-500">
-          Developed for Mr. Lương Gia's students.
-        </p>
-      </div>
-    </aside>
-  );
+const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
+    const navItems = [
+        { id: 'chat', label: 'Conversation', icon: <ChatIcon /> },
+        { id: 'grammar', label: 'Grammar Check', icon: <GrammarIcon /> },
+        { id: 'vocabulary', label: 'Vocabulary', icon: <VocabularyIcon /> },
+        { id: 'pronunciation', label: 'Pronunciation', icon: <PronunciationIcon /> },
+        { id: 'translation', label: 'Translation', icon: <TranslateIcon /> },
+        { id: 'idioms', label: 'Idioms', icon: <IdiomIcon /> },
+        { id: 'tenses', label: 'Tenses', icon: <TensesIcon /> },
+        { id: 'exercises', label: 'Exercises', icon: <ExercisesIcon /> },
+        { id: 'lessonplan', label: 'Lesson Plan', icon: <LessonPlanIcon /> },
+    ];
+
+    return (
+        <aside className="w-64 flex-shrink-0 p-4 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+            <div className="flex items-center px-2 mb-6">
+                <div className="p-2 bg-blue-600 rounded-lg text-white">
+                    <SparklesIcon />
+                </div>
+                <h1 className="ml-3 text-xl font-bold">LG Assistant</h1>
+            </div>
+            <nav className="flex-1 space-y-2">
+                {navItems.map((item) => (
+                    <NavItem
+                        key={item.id}
+                        label={item.label}
+                        icon={item.icon}
+                        isActive={currentView === item.id}
+                        onClick={() => onViewChange(item.id as View)}
+                    />
+                ))}
+            </nav>
+            <div className="mt-auto text-center text-xs text-gray-400 dark:text-gray-500">
+                <p>&copy; 2024 Mr. Lương Gia</p>
+                <p>Powered by Gemini</p>
+            </div>
+        </aside>
+    );
 };
 
 export default Sidebar;
