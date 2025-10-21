@@ -1,0 +1,7 @@
+{
+  "name": "Mr. Lương Gia (LG) English Teaching Assistant",
+  "description": "An AI-powered English teaching assistant for students of Mr. Lương Gia (LG), offering conversation practice, grammar correction, and vocabulary building.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
